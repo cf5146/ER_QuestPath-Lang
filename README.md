@@ -74,8 +74,35 @@ Pick whichever is easier for you:
 python validate.py
 ```
 
-(or `python validate.py lang/english.json lang/german.json` to check just
-one file)
+or, to check a single file:
 
-Reports missing/extra keys (warnings — not blocking) and placeholder
-mismatches (errors — these do break in-game text formatting).
+```
+python validate.py lang/german.json
+```
+
+Every finding points at the exact line so you can jump straight to it.
+
+**Errors** (these fail the check — they really do break the game's text):
+invalid JSON or non-UTF-8, duplicate keys, empty or non-string values, and
+`%s` / `%d` placeholder mismatches.
+
+**Warnings** (never blocking — a partial translation is fine): keys not
+translated yet, keys `english.json` no longer has, values still identical to
+English, whitespace/line-break differences, and lines whose length is wildly
+out of line with the rest of your own file (usually the wrong text pasted in).
+
+It also detects **step renumbering**: when a questline gains or loses a step,
+every later step in your file shifts by one, so the text silently ends up on
+the wrong step even though no key is missing. The check names the exact keys
+to re-read.
+
+Useful options:
+
+| Option | What it does |
+|---|---|
+| `--summary` | just the coverage table |
+| `--strict` | make warnings fail too |
+| `--since <git-rev>` | also flag keys whose **English text** changed since that revision — your translation is stale even though the key exists |
+| `--todo lang/german.json` | print the keys still needing work as TSV (`key`, reason, English, current) |
+| `--apply patch.tsv [--prune]` | merge a `key<TAB>translation` TSV back into a file and rewrite it in `english.json` key order |
+| `--json` | machine-readable report |
